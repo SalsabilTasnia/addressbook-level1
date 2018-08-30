@@ -14,14 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 /*
  * NOTE : =============================================================
@@ -132,6 +125,10 @@ public class AddressBook {
     private static final String COMMAND_EXIT_WORD = "exit";
     private static final String COMMAND_EXIT_DESC = "Exits the program.";
     private static final String COMMAND_EXIT_EXAMPLE = COMMAND_EXIT_WORD;
+
+    private static final String COMMAND_SORT_WORD = "sort";
+
+
 
     private static final String DIVIDER = "===================================================";
 
@@ -383,6 +380,8 @@ public class AddressBook {
             return getUsageInfoForAllCommands();
         case COMMAND_EXIT_WORD:
             executeExitProgramRequest();
+            case COMMAND_SORT_WORD:
+                return executeListAllPersonsInSortedOrder();
         default:
             return getMessageForInvalidCommandInput(commandType, getUsageInfoForAllCommands());
         }
@@ -485,7 +484,16 @@ public class AddressBook {
     private static ArrayList<String[]> getPersonsWithNameContainingAnyKeyword(Collection<String> keywords) {
         final ArrayList<String[]> matchedPersons = new ArrayList<>();
         for (String[] person : getAllPersonsInAddressBook()) {
-            final Set<String> wordsInName = new HashSet<>(splitByWhitespace(getNameFromPerson(person)));
+            final ArrayList<String> wordsInName = new ArrayList<>(splitByWhitespace(getNameFromPerson(person)));
+            for(String word1 :keywords){
+               //Collections.replaceAll(keywords, word1, word1.toLowerCase());
+                keywords.add(word1.toLowerCase());
+                //keywords.remove(word1);
+                //word1.replaceAll(word1, word1.toLowerCase());
+            }
+            for(String word2:wordsInName){
+                Collections.replaceAll(wordsInName, word2, word2.toLowerCase());
+            }
             if (!Collections.disjoint(wordsInName, keywords)) {
                 matchedPersons.add(person);
             }
@@ -577,6 +585,23 @@ public class AddressBook {
         ArrayList<String[]> toBeDisplayed = getAllPersonsInAddressBook();
         showToUser(toBeDisplayed);
         return getMessageForPersonsDisplayedSummary(toBeDisplayed);
+    }
+
+    private static String executeListAllPersonsInSortedOrder(){
+        ArrayList<String[]> sortedList = getAllPersonsInAddressBook();
+        ArrayList<String> name = new ArrayList<>();
+        for(String[] namelist: sortedList){
+            //ArrayList<String> name = new ArrayList<>();
+            name.add(getNameFromPerson(namelist));
+        }
+        Collections.sort(name);
+        int i=0;
+        for(String namedisplay : name){
+            System.out.println(++i +":" +namedisplay); //the 'LS' (||) was not deliberately added as it gives weird gaps
+        }
+
+        //showToUser(sortedList);
+        return getMessageForPersonsDisplayedSummary(sortedList);
     }
 
     /**
